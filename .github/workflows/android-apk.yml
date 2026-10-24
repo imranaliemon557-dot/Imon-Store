@@ -1,9 +1,9 @@
-name: Build & Release Android APK - ইমন স্টোর (Imon Store)
+name: Build & Release Android APK - ইমন স্টোর
 on:
   push:
     branches: [ "main", "master" ]
-  tags:
-    - 'v*'
+    tags:
+      - 'v*'
   workflow_dispatch:
 permissions:
   contents: write
