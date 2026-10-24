@@ -1,0 +1,11 @@
+{
+  "name": "ইমন স্টোর (Imon Store)",
+  "description": "ইমন স্টোর - আধুনিক ও নির্ভরযোগ্য ডিজিটাল দোকান খাতা ও স্টক ম্যানেজমেন্ট অ্যাপ।",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,132 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isStoreOwner(storeId) {
+      return isSignedIn() && (
+        request.auth.uid == storeId ||
+        (exists(/databases/$(database)/documents/stores/$(storeId)) &&
+         get(/databases/$(database)/documents/stores/$(storeId)).data.ownerId == request.auth.uid)
+      );
+    }
+
+    function isValidStore(data) {
+      return data.ownerId is string && data.ownerId == request.auth.uid &&
+             data.storeName is string && data.storeName.size() > 0 && data.storeName.size() <= 120 &&
+             (!('phone' in data) || (data.phone is string && data.phone.size() <= 20)) &&
+             (!('address' in data) || (data.address is string && data.address.size() <= 300));
+    }
+
+    function isValidProduct(data) {
+      return data.storeId is string &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 120 &&
+             data.costPrice is number && data.costPrice >= 0 &&
+             data.salePrice is number && data.salePrice >= 0 &&
+             data.stockQuantity is number &&
+             data.unit is string && data.unit.size() <= 20;
+    }
+
+    function isValidCustomer(data) {
+      return data.storeId is string &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 120 &&
+             data.phone is string && data.phone.size() <= 20 &&
+             data.currentBalance is number &&
+             data.shareToken is string && data.shareToken.size() <= 64;
+    }
+
+    function isValidTransaction(data) {
+      return data.storeId is string &&
+             data.type is string && data.type.size() <= 40 &&
+             data.amount is number && data.amount >= 0 &&
+             data.timestamp is string && data.timestamp.size() <= 40;
+    }
+
+    function isValidStockMovement(data) {
+      return data.storeId is string &&
+             data.productId is string &&
+             data.changeQuantity is number &&
+             data.timestamp is string;
+    }
+
+    function isValidNote(data) {
+      return data.storeId is string &&
+             data.title is string && data.title.size() <= 150 &&
+             data.content is string && data.content.size() <= 2000 &&
+             data.isPrivate is bool;
+    }
+
+    // Stores collection
+    match /stores/{storeId} {
+      allow get: if isStoreOwner(storeId);
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(storeId) && isValidStore(request.resource.data);
+      allow update: if isStoreOwner(storeId) && isValidStore(request.resource.data) &&
+                       request.resource.data.ownerId == resource.data.ownerId;
+      allow delete: if isStoreOwner(storeId);
+
+      // Subcollection: Products
+      match /products/{productId} {
+        allow get: if isStoreOwner(storeId);
+        allow list: if isStoreOwner(storeId);
+        allow create: if isStoreOwner(storeId) && isValidId(productId) && isValidProduct(request.resource.data);
+        allow update: if isStoreOwner(storeId) && isValidProduct(request.resource.data);
+        allow delete: if isStoreOwner(storeId);
+      }
+
+      // Subcollection: Customers
+      match /customers/{customerId} {
+        allow get: if isStoreOwner(storeId);
+        allow list: if isStoreOwner(storeId);
+        allow create: if isStoreOwner(storeId) && isValidId(customerId) && isValidCustomer(request.resource.data);
+        allow update: if isStoreOwner(storeId) && isValidCustomer(request.resource.data);
+        allow delete: if isStoreOwner(storeId);
+      }
+
+      // Subcollection: Transactions
+      match /transactions/{transactionId} {
+        allow get: if isStoreOwner(storeId);
+        allow list: if isStoreOwner(storeId);
+        allow create: if isStoreOwner(storeId) && isValidId(transactionId) && isValidTransaction(request.resource.data);
+        allow update: if isStoreOwner(storeId) && isValidTransaction(request.resource.data) &&
+                         request.resource.data.createdAt == resource.data.createdAt;
+        allow delete: if isStoreOwner(storeId);
+      }
+
+      // Subcollection: StockMovements
+      match /stockMovements/{movementId} {
+        allow get, list: if isStoreOwner(storeId);
+        allow create: if isStoreOwner(storeId) && isValidId(movementId) && isValidStockMovement(request.resource.data);
+        allow update, delete: if isStoreOwner(storeId);
+      }
+
+      // Subcollection: SupportMessages
+      match /supportMessages/{messageId} {
+        allow get, list: if isStoreOwner(storeId);
+        allow create: if isValidId(messageId);
+        allow update, delete: if isStoreOwner(storeId);
+      }
+
+      // Subcollection: Notes
+      match /notes/{noteId} {
+        allow get, list: if isStoreOwner(storeId);
+        allow create: if isStoreOwner(storeId) && isValidId(noteId) && isValidNote(request.resource.data);
+        allow update: if isStoreOwner(storeId) && isValidNote(request.resource.data);
+        allow delete: if isStoreOwner(storeId);
+      }
+    }
+  }
+}

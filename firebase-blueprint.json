@@ -1,0 +1,168 @@
+{
+  "entities": {
+    "Store": {
+      "title": "Store",
+      "description": "Store configuration and owner profile",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "ownerId": { "type": "string", "maxLength": 128 },
+        "storeName": { "type": "string", "maxLength": 120 },
+        "phone": { "type": "string", "maxLength": 20 },
+        "address": { "type": "string", "maxLength": 300 },
+        "pinHash": { "type": "string", "maxLength": 128 },
+        "pinSalt": { "type": "string", "maxLength": 64 },
+        "currency": { "type": "string", "maxLength": 10 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["ownerId", "storeName"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Inventory product item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "storeId": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 120 },
+        "sku": { "type": "string", "maxLength": 64 },
+        "costPrice": { "type": "number" },
+        "salePrice": { "type": "number" },
+        "stockQuantity": { "type": "number" },
+        "unit": { "type": "string", "maxLength": 20 },
+        "supplier": { "type": "string", "maxLength": 120 },
+        "lowStockThreshold": { "type": "number" },
+        "isArchived": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["storeId", "name", "costPrice", "salePrice", "stockQuantity", "unit"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "Customer ledger profile and dues tracking",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "storeId": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 120 },
+        "phone": { "type": "string", "maxLength": 20 },
+        "address": { "type": "string", "maxLength": 300 },
+        "currentBalance": { "type": "number" },
+        "shareToken": { "type": "string", "maxLength": 64 },
+        "shareTokenCreatedAt": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["storeId", "name", "phone", "currentBalance", "shareToken"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Sales, payments, expenses, returns, and dues ledger entries",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "storeId": { "type": "string", "maxLength": 128 },
+        "type": { "type": "string", "maxLength": 40 },
+        "customerId": { "type": "string", "maxLength": 128 },
+        "customerName": { "type": "string", "maxLength": 120 },
+        "amount": { "type": "number" },
+        "costAmount": { "type": "number" },
+        "previousBalance": { "type": "number" },
+        "newBalance": { "type": "number" },
+        "description": { "type": "string", "maxLength": 500 },
+        "idempotencyKey": { "type": "string", "maxLength": 128 },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string", "maxLength": 128 }
+      },
+      "required": ["storeId", "type", "amount", "timestamp"]
+    },
+    "StockMovement": {
+      "title": "StockMovement",
+      "description": "Audit record of product inventory increment and decrement",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "storeId": { "type": "string", "maxLength": 128 },
+        "productId": { "type": "string", "maxLength": 128 },
+        "productName": { "type": "string", "maxLength": 120 },
+        "changeQuantity": { "type": "number" },
+        "previousQuantity": { "type": "number" },
+        "newQuantity": { "type": "number" },
+        "reason": { "type": "string", "maxLength": 200 },
+        "linkedTransactionId": { "type": "string", "maxLength": 128 },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["storeId", "productId", "changeQuantity", "timestamp"]
+    },
+    "SupportMessage": {
+      "title": "SupportMessage",
+      "description": "Customer support text and voice note messages",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "storeId": { "type": "string", "maxLength": 128 },
+        "customerId": { "type": "string", "maxLength": 128 },
+        "customerName": { "type": "string", "maxLength": 120 },
+        "senderType": { "type": "string", "maxLength": 20 },
+        "messageType": { "type": "string", "maxLength": 20 },
+        "text": { "type": "string", "maxLength": 1000 },
+        "voiceUrl": { "type": "string", "maxLength": 1000 },
+        "durationSeconds": { "type": "number" },
+        "isRead": { "type": "boolean" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["storeId", "customerId", "senderType", "messageType", "timestamp"]
+    },
+    "Note": {
+      "title": "Note",
+      "description": "Shop and customer internal notes and reminders",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "storeId": { "type": "string", "maxLength": 128 },
+        "targetType": { "type": "string", "maxLength": 40 },
+        "targetId": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 150 },
+        "content": { "type": "string", "maxLength": 2000 },
+        "isPrivate": { "type": "boolean" },
+        "reminderDate": { "type": "string", "maxLength": 64 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["storeId", "title", "content", "isPrivate"]
+    }
+  },
+  "firestore": {
+    "/stores/{storeId}": {
+      "schema": { "$ref": "Store" },
+      "description": "Stores and business accounts"
+    },
+    "/stores/{storeId}/products/{productId}": {
+      "schema": { "$ref": "Product" },
+      "description": "Inventory products"
+    },
+    "/stores/{storeId}/customers/{customerId}": {
+      "schema": { "$ref": "Customer" },
+      "description": "Customers and dues balances"
+    },
+    "/stores/{storeId}/transactions/{transactionId}": {
+      "schema": { "$ref": "Transaction" },
+      "description": "Financial and ledger records"
+    },
+    "/stores/{storeId}/stockMovements/{movementId}": {
+      "schema": { "$ref": "StockMovement" },
+      "description": "Audit records for stock changes"
+    },
+    "/stores/{storeId}/supportMessages/{messageId}": {
+      "schema": { "$ref": "SupportMessage" },
+      "description": "Customer inquiry text and voice recordings"
+    },
+    "/stores/{storeId}/notes/{noteId}": {
+      "schema": { "$ref": "Note" },
+      "description": "Internal business notes and reminders"
+    }
+  }
+}
