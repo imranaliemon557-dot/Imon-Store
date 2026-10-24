@@ -4,7 +4,6 @@ const config: CapacitorConfig = {
   appId: 'com.imonstore.app',
   appName: 'ইমন স্টোর',
   webDir: 'dist',
-  bundledWebRuntime: false,
   server: {
     androidScheme: 'https',
     cleartext: false
